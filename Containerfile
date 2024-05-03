@@ -35,7 +35,7 @@ RUN cd /tmp/v4l2loopback; \
 FROM registry.fedoraproject.org/fedora:latest
 MAINTAINER "Robert Bohne" robert@bohne.io
 
-ARG V4L2LOOPBACK_KERNEL_VERSION=6.8.8-300.fc40.x86_64
+ARG V4L2LOOPBACK_KERNEL_VERSION
 WORKDIR /tmp
 
 COPY --from=builder /tmp/koji/ /tmp/koji/

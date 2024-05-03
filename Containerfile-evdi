@@ -1,0 +1,15 @@
+FROM registry.fedoraproject.org/fedora:latest
+
+# `uname -r` -> 6.8.8-300.fc40.x86_64
+ARG KERNEL_VERSION
+# any commitish, like a tag (v0.12.5) or a commit hash
+ARG MODULE_VERSION
+ARG GH_REPO
+ARG RELEASE_ARTIFACT
+
+WORKDIR /tmp
+
+RUN cd /tmp && \
+    dnf install -y wget && \
+    wget https://github.com/${GH_REPO}/releases/download/${MODULE_VERSION}/${RELEASE_ARTIFACT} && \
+    dnf install -y ./${RELEASE_ARTIFACT}

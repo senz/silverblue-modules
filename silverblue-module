@@ -1,0 +1,136 @@
+#!/bin/bash
+
+# The MIT License
+
+# Copyright (c) 2024
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+set -e
+
+ENVFILE="${ENVFILE:-./env}"
+source $ENVFILE
+
+
+if [ $(id -u) -ne 0 ]; then
+    echo "Please run as root"
+    exit 1;
+fi;
+
+KERNEL_VERSION=$(uname -r)
+
+IMAGETAG=${MODULE_VERSION}-${KERNEL_VERSION}
+build_module()
+{
+  
+  set +e
+  podman pull ${IMAGE}:${IMAGETAG}
+  RC=$?
+  # 125 failed to pull
+  set -e
+
+
+  if [[ $RC -eq 125 ]]; then
+
+    echo "The ${MODULE_VERSION} kernel module container is not built."
+    echo "Building ${MODULE_VERSION} kernel module for ${KERNEL_VERSION} ..."
+    podman pull registry.fedoraproject.org/fedora:latest
+    podman build -f $CONTAINERFILE --build-arg MODULE_VERSION=${MODULE_VERSION} \
+    --build-arg ARCHIVE_SHA256=${ARCHIVE_SHA256} \
+    --build-arg KERNEL_VERSION=${KERNEL_VERSION} \
+    --build-arg MODULE_NAME=${MODULE_NAME} \
+    --build-arg GH_REPO=${GH_REPO} \
+    --build-arg RELEASE_ARTIFACT=${RELEASE_ARTIFACT} \
+    -t ${IMAGE}:${IMAGETAG} ${BUILD_SOURCE}
+    
+  else
+    echo "The ${MODULE_VERSION} kernel module container is already built."
+  fi
+
+  echo "Cleaning up old kernel module container builds..."
+
+  podman rmi $(podman images -f "dangling=true" -q) &> /dev/null || :
+
+  if [ "$PRUNE_OLD_VERSIONS" = true ] ; then
+
+    for OLD_IMAGES in $(podman images -n|grep ${MODULE_NAME}|grep -v ${MODULE_VERSION}|awk '{print $3}'); do
+      podman rmi ${OLD_IMAGES} &> /dev/null || :
+    done
+
+  fi
+
+}
+
+unload_module()
+{
+  echo "Unloading module..."
+  if lsmod |grep "${MODULE_NAME}" &> /dev/null; then
+    rmmod $MODULE_NAME
+  fi
+}
+
+load_module()
+{
+  echo "Loading module..."
+  if ! lsmod | grep "${MODULE_NAME}" &> /dev/null; then
+    podman run --name ${MODULE_NAME} -e "MODULE_VERSION=${MODULE_VERSION}" \
+    -e "KERNEL_VERSION=${KERNEL_VERSION}" --rm --privileged \
+    ${IMAGE}:${IMAGETAG} \
+    sh -c "insmod /usr/lib/modules/${KERNEL_VERSION}/extra/${MODULE_NAME}.ko exclusive_caps=1"
+  fi
+}
+
+
+check(){
+  ls -al /dev/dri/by-path | grep $MODULE_NAME
+}
+
+case "$1" in
+        build)
+          build_module
+        ;;
+
+        load)
+          load_module
+        ;;
+
+        unload)
+          unload_module
+        ;;
+
+        reload)
+          build_module
+          unload_module
+          load_module
+        ;;
+
+        check)
+          check
+        ;;
+
+        *)
+          echo $"Unknown command. Exiting."
+          echo "Usage:"
+          echo ""
+          echo "build       Build kernel module container"
+          echo "load        Load kernel module"
+          echo "unload      Unload kernel module"
+          echo "reload      Build and reload kernel module"
+          echo "check       Check module"
+          exit 1
+esac

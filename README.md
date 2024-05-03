@@ -10,3 +10,37 @@ sudo ./silverblue-v4l2loopback-module load
 ```
 
 From time to time I push my kernel builds to [quay.io](https://quay.io/repository/rbo/silverblue-v4l2loopback?tab=tags).
+
+## secure boot kernel module signing
+
+[Grabbed](https://github.com/displaylink-rpm/displaylink-rpm?tab=readme-ov-file#secure-boot-on-fedora) from displaylink-rpm:
+
+First create a self signed MOK:
+
+```
+openssl req -new -x509 -newkey rsa:2048 -keyout MOK.priv -outform DER -out \
+MOK.der -nodes -days 36500 -subj "/CN=FedoraCustom/"
+```
+Tip: you can run above command in toolbox, if you dont have openssl bin.
+
+Then register the MOK with secure boot:
+
+`sudo mokutil --import MOK.der`
+
+Then reboot your Fedora host and follow the instructions to enroll the key (scary blue dialog will appear on boot).
+
+Now you can sign the module. This must be done for every kernel upgrade:
+
+```
+# spawning shell in container with module. /mnt points to dir with keys
+sudo podman run --name v4l2loopback -e V4L2LOOPBACK_VERSION=48245383f12e3c9e8ac0b28bc39e2255a257a049 -e V4L2LOOPBACK_KERNEL_VERSION=6.8.8-300.fc40.x86_64 -v .:/mnt --privileged -it quay.io/rbo/silverblue-v4l2loopback:48245383f12e3c9e8ac0b28bc39e2255a257a049-6.8.8-300.fc40.x86_64 bash
+
+# kernel headers (we really need only one script)
+$ sudo dnf install kernel-devel
+
+# signing with keys that are mounted in /mnt
+$ sudo /usr/src/kernels/6.8.8-300.fc40.x86_64/scripts/sign-file sha256 /mnt/MOK.priv /mnt/MOK.der /lib/modules/6.8.8-300.fc40.x86_64/extra/v4l2loopback.ko
+
+# verify sign (signer: FedoraCustom, sig_key: matches your key)
+$ modinfo /lib/modules/6.8.8-300.fc40.x86_64/extra/v4l2loopback.ko
+```

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+export V4L2LOOPBACK_VERSION=48245383f12e3c9e8ac0b28bc39e2255a257a049
+export V4L2LOOPBACK_SHA256=185a34c6d94358be9a56b2fe9e8e48ad32bd5c601779889170b407abddc04e0e
+# V4L2LOOPBACK_KERNEL_VERSION=$(uname -r)
+sudo ./silverblue-v4l2loopback-module build

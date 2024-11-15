@@ -12,13 +12,19 @@ Inspired by: https://github.com/jdoss/atomic-wireguard
 
 https://www.projectatomic.io/blog/2018/06/building-kernel-modules-with-podman/
 
+How to update build version:
+[Available versions](https://github.com/umlaeute/v4l2loopback/tags)
+
+```shell
+./calc_gh_checksum.sh umlaeute/v4l2loopback v0.13.2
+```
+
+How to build and load:
 
 ```
 sudo ./silverblue-v4l2loopback-module build
 sudo ./silverblue-v4l2loopback-module load
 ```
-
-From time to time I push my kernel builds to [quay.io](https://quay.io/repository/rbo/silverblue-v4l2loopback?tab=tags).
 
 ## evdi
 

@@ -54,6 +54,7 @@ build_v4l2loopback()
     podman build --build-arg V4L2LOOPBACK_VERSION=${V4L2LOOPBACK_VERSION} \
     --build-arg V4L2LOOPBACK_SHA256=${V4L2LOOPBACK_SHA256} \
     --build-arg V4L2LOOPBACK_KERNEL_VERSION=${V4L2LOOPBACK_KERNEL_VERSION} \
+    --build-arg LABEL_IMAGE_SOURCE=${LABEL_IMAGE_SOURCE} \
     -t ${V4L2LOOPBACK_IMAGE}:${V4L2LOOPBACK_IMAGETAG} ${BUILD_SOURCE}
     
   else
@@ -112,7 +113,7 @@ check(){
   podman run --name v4l2loopback -e "V4L2LOOPBACK_VERSION=${V4L2LOOPBACK_VERSION}" \
     -e "V4L2LOOPBACK_KERNEL_VERSION=${V4L2LOOPBACK_KERNEL_VERSION}" --rm --privileged \
     ${V4L2LOOPBACK_IMAGE}:${V4L2LOOPBACK_IMAGETAG} \
-    /usr/bin/v4l2-ctl --list-devices
+    /usr/bin/v4l2-ctl --list-devices | grep v4l2loopback
 }
 
 case "$1" in

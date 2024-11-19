@@ -1,9 +1,9 @@
 PRUNE_OLD_VERSIONS=false
-ARCHIVE_SHA256=2a5de1ac45af1b2c1a9f53257ebabeae012f93af67fac0b9720f31c4337cac26
-MODULE_VERSION=v5.8.0-3
+ARCHIVE_SHA256=72c2e0166419ebcd30715010957fb2a4310d0a7f4fb1ee58ce8450cb953a9801
+MODULE_VERSION=v6.1.0
 MODULE_NAME=evdi
 BUILD_SOURCE=.
 GH_REPO=displaylink-rpm/displaylink-rpm
 IMAGE=quay.io/senz/silverblue-evdi
-RELEASE_ARTIFACT=fedora-40-displaylink-1.14.4-1.github_evdi.x86_64.rpm
+RELEASE_ARTIFACT=fedora-41-displaylink-1.14.7-2.github_evdi.x86_64.rpm 
 CONTAINERFILE=Containerfile-evdi

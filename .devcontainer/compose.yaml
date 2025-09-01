@@ -4,9 +4,19 @@ services:
       dockerfile: ../Containerfile.koji
     volumes:
       - ../:/workspaces
+      # - /var/lib/containers:/var/lib/containers
+      # - ${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock
+      # - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      # - ./.devcontainer/registries.conf:/etc/containers/registries.conf:ro
+    privileged: true
+    security_opt:
+      - seccomp=unconfined
+      - label=disable
     ulimits:
       nproc: 65535
       nofile:
         soft: 20000
         hard: 20000
+    environment:
+      - BUILDAH_ISOLATION=chroot
     entrypoint: tail -f /dev/null

@@ -1,6 +1,9 @@
 ARG FEDORA_VERSION=40
 FROM registry.fedoraproject.org/fedora:${FEDORA_VERSION}
 
+# Based on https://github.com/containers/image_build/blob/main/podman/Containerfile
+# See also https://www.redhat.com/en/blog/podman-inside-container
+
 ARG USERNAME=dev
 ARG UID=1000
 ARG GID=1000

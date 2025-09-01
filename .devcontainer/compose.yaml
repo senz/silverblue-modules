@@ -1,0 +1,12 @@
+services:
+  devcontainer:
+    build:
+      dockerfile: ../Containerfile.koji
+    volumes:
+      - ../:/workspaces
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 20000
+    entrypoint: tail -f /dev/null

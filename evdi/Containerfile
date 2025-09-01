@@ -1,3 +1,4 @@
+ARG FEDORA_VERSION=40
 FROM registry.fedoraproject.org/fedora:40
 
 # `uname -r` -> 6.8.8-300.fc40.x86_64

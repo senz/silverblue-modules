@@ -1,0 +1,27 @@
+FROM registry.fedoraproject.org/fedora:40
+
+# `uname -r` -> 6.8.8-300.fc40.x86_64
+ARG KERNEL_VERSION
+# any commitish, like a tag (v0.12.5) or a commit hash
+ARG MODULE_VERSION
+ARG GH_REPO
+ARG RELEASE_ARTIFACT
+ARG RELEASE_CHECKSUM
+ARG DO_SIGN=1
+
+WORKDIR /tmp
+
+# https://github.com/displaylink-rpm/displaylink-rpm/releases/download/v6.1.0-2/fedora-40-displaylink-1.14.7-4.github_evdi.x86_64.rpm
+RUN cd /tmp && \
+    dnf install -y wget kernel-devel rpm-build gcc-c++ libdrm-devel systemd-rpm-macros && \
+    wget https://github.com/displaylink-rpm/displaylink-rpm/releases/download/${MODULE_VERSION}/${RELEASE_ARTIFACT} && \
+    dnf install -y ./${RELEASE_ARTIFACT}
+
+# sudo /usr/src/kernels/${KERNEL_VERSION}/scripts/sign-file sha256 ${KEY_PRIV} ${KEY_DER} ${MODULE_PATH}
+# /usr/lib/modules/6.12.11-100.fc40.x86_64/extra
+
+ENV 
+
+RUN test $DO_SIGN -eq 1 && \
+    echo "Signing module" && \
+    /usr/src/kernels/${KERNEL_VERSION}/scripts/sign-file sha512 /etc/pki/keys/privkey.pem /etc/pki/keys/pubkey.der /lib/modules/${KERNEL_VERSION}/extra/v4l2loopback.ko || \

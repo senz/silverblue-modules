@@ -1,0 +1,23 @@
+#!/bin/bash
+
+PRUNE_OLD_VERSIONS=false
+ARCHIVE_SHA256=b4e018f7e14ab5dc038121e359c890b8f1c197f53f98c088f4089192a36c6ba9
+MODULE_VERSION=v6.1.0-2
+MODULE_NAME=evdi
+BUILD_SOURCE=.
+GH_REPO=displaylink-rpm/displaylink-rpm
+IMAGE=quay.io/senz/silverblue-evdi
+RELEASE_ARTIFACT=fedora-40-displaylink-1.14.7-4.github_evdi.x86_64.rpm
+CONTAINERFILE=Containerfile-evdi
+
+KERNEL_VERSION=$(uname -r)
+IMAGETAG=${MODULE_VERSION}-${KERNEL_VERSION}
+ 
+podman build -f $CONTAINERFILE --build-arg MODULE_VERSION=${MODULE_VERSION} \
+--build-arg ARCHIVE_SHA256=${ARCHIVE_SHA256} \
+--build-arg KERNEL_VERSION=${KERNEL_VERSION} \
+--build-arg MODULE_NAME=${MODULE_NAME} \
+--build-arg GH_REPO=${GH_REPO} \
+--build-arg RELEASE_ARTIFACT=${RELEASE_ARTIFACT} \
+-t ${IMAGE}:${IMAGETAG} ${BUILD_SOURCE}
+

@@ -49,7 +49,7 @@ build_module()
 
     echo "The ${MODULE_VERSION} kernel module container is not built."
     echo "Building ${MODULE_VERSION} kernel module for ${KERNEL_VERSION} ..."
-    podman pull registry.fedoraproject.org/fedora:latest
+    # podman pull registry.fedoraproject.org/fedora:latest
     podman build -f $CONTAINERFILE --build-arg MODULE_VERSION=${MODULE_VERSION} \
     --build-arg ARCHIVE_SHA256=${ARCHIVE_SHA256} \
     --build-arg KERNEL_VERSION=${KERNEL_VERSION} \

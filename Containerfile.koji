@@ -1,0 +1,19 @@
+ARG FEDORA_VERSION=40
+FROM registry.fedoraproject.org/fedora:${FEDORA_VERSION}
+
+ARG USERNAME=dev
+ARG UID=1000
+ARG GID=1000
+
+WORKDIR /tmp
+
+RUN dnf install -y sudo koji git podman \
+    && dnf clean all \
+    && groupadd -g ${GID} ${USERNAME} \
+    && useradd -m -u ${UID} -g ${GID} ${USERNAME} \
+    && usermod -aG wheel ${USERNAME} \
+    && echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers \
+    && mkdir -p /workspaces
+
+USER $USERNAME
+WORKDIR /workspaces

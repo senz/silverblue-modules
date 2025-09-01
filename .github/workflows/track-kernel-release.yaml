@@ -1,0 +1,39 @@
+name: Check Fedora Builds for New Kernels
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at midnight
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  check-kernel:
+    outputs:
+      LATEST_KERNEL: ${{ steps.check-kernel.outputs.LATEST_KERNEL }}
+    runs-on: ubuntu-22.04
+    container:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:koji-edge
+    strategy:
+      matrix:
+        branch: [40, 41]
+
+    steps:
+      - name: Check for new kernel F${{ matrix.branch }}
+        id: check-kernel
+        run: |
+          latest="$(koji latest-pkg f${{ matrix.branch }}-updates kernel|tail -1|awk -F' ' '{ print $1 }')"
+          echo "Latest kernel in Fedora ${{ matrix.branch }} is $latest"
+          version="$(echo $latest|awk -F'-' '{ print $2 }')"
+          build="$(echo $latest|awk -F'-' '{ print $3 }')"
+
+          {
+            echo "LATEST_KERNEL=$latest"
+            echo "KERNEL_VERSION=$version"
+            echo "KERNEL_BUILD=$build"
+          } >> $GITHUB_OUTPUT
+
+      - name: Verify if its new
+      - name: Commit new kernel versions
+      - name: Create release
